@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knbn-api
+  labels:
+    app: knbn-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: knbn-api
+  template:
+    metadata:
+      labels:
+        app: knbn-api
+    spec:
+      containers:
+        - name: knbn-api
+          image: rpi2.null.care/todo-api:latest
+          imagePullPolicy: Always 
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_URL
+              value: redis://redis-stack/
+      imagePullSecrets:
+        - name: rpi2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knbn-api
+spec:
+  type: ClusterIP
+  selector:
+    app: knbn-api
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

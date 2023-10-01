@@ -1,4 +1,4 @@
 {
-  "rust-analyzer.linkedProjects": ["./llmw/Cargo.toml"],
+  "rust-analyzer.linkedProjects": ["Cargo.toml"],
   "editor.defaultFormatter": "jinxdash.prettier-rust"
 }

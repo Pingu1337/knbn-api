@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: knbn-api
-          image: rpi2.null.care/knbn-api:latest
-          imagePullPolicy: Always 
+          image: mioherman/knbn-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

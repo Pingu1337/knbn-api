@@ -174,6 +174,8 @@ fn rocket() -> _ {
         .register("/", catchers![not_found, conflict, bad_request])
 }
 
+const REDIS_INDEX: &str = "knbn_zip";
+
 fn set_object(todo: Todo) -> redis::RedisResult<()> {
     dotenv::dotenv().ok();
     let redis_url = dotenv::var("REDIS_URL").expect("REDIS_URL must be set");
@@ -181,8 +183,9 @@ fn set_object(todo: Todo) -> redis::RedisResult<()> {
     let mut con: redis::Connection = client.get_connection()?;
 
     let todo_json: String = to_string(&todo).unwrap();
+    let id = REDIS_INDEX.to_string() + ":" + &todo.id;
 
-    let _: () = con.set(todo.id, todo_json)?;
+    let _: () = con.set(id, todo_json)?;
 
     Ok(())
 }
@@ -193,7 +196,7 @@ fn get_objects(user: String) -> redis::RedisResult<Vec<Todo>> {
     let client: redis::Client = redis::Client::open(redis_url)?;
     let mut con: redis::Connection = client.get_connection()?;
 
-    let query = format!("{}:*", user);
+    let query = format!("{}:{}:*", REDIS_INDEX, user);
     let keys: Vec<String> = con.keys(query)?;
 
     let mut values: Vec<Todo> = Vec::new();
@@ -211,7 +214,9 @@ fn get_object(id: String) -> redis::RedisResult<Todo> {
     let redis_url = dotenv::var("REDIS_URL").expect("REDIS_URL must be set");
     let client: redis::Client = redis::Client::open(redis_url)?;
     let mut con: redis::Connection = client.get_connection()?;
-    let todo_json: Result<String, _> = con.get(id);
+
+    let redis_id = REDIS_INDEX.to_string() + ":" + &id;
+    let todo_json: Result<String, _> = con.get(redis_id);
 
     match todo_json {
         Ok(json) => {
@@ -238,7 +243,8 @@ fn delete_object(id: String) -> redis::RedisResult<()> {
     let client: redis::Client = redis::Client::open(redis_url)?;
     let mut con: redis::Connection = client.get_connection()?;
 
-    let _: () = con.del(id)?;
+    let redis_id = REDIS_INDEX.to_string() + ":" + &id;
+    let _: () = con.del(redis_id)?;
 
     Ok(())
 }
